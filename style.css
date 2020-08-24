@@ -30,7 +30,7 @@ body{
   background-color: #edfcff;
 }
 
-#container > div.empty, #container > div:hover {
+#container > div.empty {
   background-color: #fff;
 }
 
