@@ -1,108 +1,135 @@
 let div = document.querySelectorAll(".randNum");
 let solve = document.getElementById("solve");
 let reset = document.getElementById("reset");
-
-for (let i = 0; i < div.length; i++) {
+div.forEach(function (key, value) {
   // click on each element
-  div[i].onclick = function () {
-    let cont = document.getElementById("container");
-    const rectBottom = cont.getBoundingClientRect();
-    const rectRight = cont.getBoundingClientRect();
-
-    // find the position of current element
-    var l = this.offsetLeft;
-    var t = this.offsetTop;
-    var b = rectBottom.height - t - this.getBoundingClientRect().height;
-    var r = rectRight.width - l - this.getBoundingClientRect().width;
-
-    // find the siblings position of current element
-
-    for (let j = 0; j < div.length; j++) {
-      var lSub = div[j].offsetLeft;
-      var tSub = div[j].offsetTop;
-      var bSub =
-        rectBottom.height - tSub - div[j].getBoundingClientRect().height;
-      var rSub = rectRight.width - lSub - div[j].getBoundingClientRect().width;
-      if (
-        (l - 50 === lSub && t === tSub) ||
-        (t - 50 === tSub && l === lSub) ||
-        (b - 50 === bSub && l === lSub) ||
-        (r - 50 === rSub && t == tSub)
-      ) {
-        if (div[j].innerHTML === "") {
-          // replace empty element value with current number
-          div[j].innerHTML = this.innerHTML;
-          this.innerHTML = "";
-
-          // game over
-          var arr = [];
-          for (let i = 0; i < div.length; i++) {
-            arr.push(Number(div[i].innerHTML));
-          }
-
-          arr.pop();
-          if (
-            arr.every(function (num, index) {
-              return index === arr.length - 1 || num < arr[index + 1];
-            })
-          ) {
-            alert("congratulations you win");
-          }
+  key.onclick = function () {
+    var container = document.getElementById("container");
+    // find the current element coordinates
+    var el_button =
+      get_Rect(container).height - this.offsetTop - get_Rect(this).height;
+    var el_right =
+      get_Rect(container).width - this.offsetLeft - get_Rect(this).width;
+    // find the empty current element coordinates
+    var emp = empty_div(div);
+    var empty_button =
+      get_Rect(container).height - emp.offsetTop - get_Rect(emp).height;
+    var empty_right =
+      get_Rect(container).width - emp.offsetLeft - get_Rect(emp).width;
+    // check if current element next to the empty element
+    if (el_button === empty_button) {
+      // if horizontal check
+      if (el_right - empty_right === 50 || el_right - empty_right === -50) {
+        // if true change values
+        emp.innerHTML = key.innerHTML;
+        key.innerHTML = "";
+        if(emp.classList.contains("empty")){
+          emp.classList.remove("empty");
+          key.classList.add("empty")
+        }
+      }
+    } else if (el_right === empty_right) {
+      // if vertical check
+      if (el_button - empty_button === 50 || el_button - empty_button === -50) {
+        // if true change values
+        emp.innerHTML = key.innerHTML;
+        key.innerHTML = "";
+        if(emp.classList.contains("empty")){
+          emp.classList.remove("empty");
+          key.classList.add("empty")
         }
       }
     }
+    // call check_win() function if you win, game is over
+    check_win();
   };
+});
+
+// for getting pos
+function get_Rect(elem) {
+  return elem.getBoundingClientRect();
 }
 
+// find empty div
+function empty_div(param) {
+  for (var i = 0; i < param.length; i++) {
+    if (param[i].innerHTML === "") {
+      return param[i];
+    }
+  }
+}
+
+//  check_win() function for show message when game is over
+function check_win() {
+  // put all element in array
+  arr = [];
+  for (var j = 0; j < div.length; j++) {
+    var content = div[j].innerHTML;
+    if (content !== "") {
+      arr.push(content);
+    }
+  }
+  // check sequence of elements
+  if (
+    arr.every(function (num, index) {
+      return index === arr.length - 1 || Number(num) < arr[index + 1];
+    })
+  ) {
+    // show win message
+    alert("congratulations you win");
+  } else {
+    console.log("still gaming");
+  }
+}
 // solve the game
 solve.onclick = function () {
+  // put all elements in array
   let s = [];
-
   for (let i = 0; i < div.length; i++) {
-    let x = div[i].innerHTML;
-    s.push(x);
+    var x = div[i].innerHTML;
+    if (x !== "") {
+      s.push(x);
+    }
+    // sort that elements
     s.sort(function (a, b) {
       return a - b;
     });
   }
-  for (let i = 0; i < s.length; i++) {
-    div[i].innerHTML = s[i + 1];
-    if (!s[i + 1]) {
-      div[i].innerHTML = "";
-    }
-  }
-};
-
-// reset values
-reset.onclick = function () {
-  let s = [];
-
-  for (let i = 0; i < div.length; i++) {
-    let x = div[i].innerHTML;
-    s.push(x);
-    shuffle(s);
-  }
-
+  //   push one empty element for last div
+  s.push("");
+  //   put new sorted elements
   for (let i = 0; i < s.length; i++) {
     div[i].innerHTML = s[i];
   }
 };
 
-// shuffle function
-function shuffle(s) {
-  var len = s.length,
-    temp,
-    index;
-  // While there are elements in the array
-  while (len > 0) {
-    // Pick a random index
-    index = Math.floor(Math.random() * len);
-    // Decrease ctr by 1
-    len--;
-    // And swap the last element with it
-    temp = s[len];
-    s[len] = s[index];
-    s[index] = temp;
+// start new game
+reset.onclick = function () {
+  // put all elements in array
+  let newArr = [];
+  for (let i = 0; i < div.length; i++) {
+    let x = div[i].innerHTML;
+    newArr.push(x);
+    // shuffle for change values
+    shuffle(newArr);
   }
-  return s;
+  //   put  shuffled vales  into elements
+  for (let i = 0; i < newArr.length; i++) {
+    div[i].innerHTML = newArr[i];
+  }
+};
+
+// shuffle function
+function shuffle(elem) {
+  var len = elem.length,
+    temp,
+    i;
+  while (len > 0) {
+    i = Math.floor(Math.random() * len);
+    len--;
+    temp = elem[len];
+    elem[len] = elem[i];
+    elem[i] = temp;
+  }
+  return elem;
 }
